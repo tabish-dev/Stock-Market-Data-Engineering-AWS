@@ -1,0 +1,79 @@
+KAFKA: Apache Kafka is an open-source distributed low-latency real-time event-streaming system. 
+An event is a data record that indicates a particular activity. For example, purchasing a product online is an event. 
+Apache Kafka can store, read and analyze several data records.
+
+
+The Kafka architecture is composed of several key components:
+
+Producer: Producers are responsible for publishing records (messages) to Kafka topics. 
+These records can be any type of data, such as logs, events, or metrics.
+
+Broker: Kafka brokers are responsible for storing and managing the records. 
+Each Kafka broker is a server that hosts one or more partitions of Kafka topics.
+
+Topic: A topic is a category to which records are published by producers. 
+Topics are partitioned and replicated across brokers for fault tolerance and scalability.
+
+Partition: Each topic is divided into one or more partitions, which are ordered and immutable sequences of records.
+Partitions allow data within a topic to be distributed across multiple brokers.
+
+Consumer Group: Consumers are grouped together into consumer groups.
+Each consumer group consists of one or more consumers that consume records from one or more partitions of a topic. 
+Each partition within a topic can be consumed by only one consumer within a consumer group.
+
+Consumer: Consumers read records from Kafka topics. They can read records from one or more partitions of one or more 
+topics within a consumer group.
+
+
+
+
+
+
+ssh -i "stocks_keyy.pem" ec2-user@ec2-3-86-192-80.compute-1.amazonaws.com
+
+wget https://downloads.apache.org/kafka/3.7.0/kafka_2.12-3.7.0.tgz
+tar -xvf kafka_2.12-3.7.0.tgz
+
+sudo yum install java
+
+
+bin/kafka-topics.sh --create --topic demo_testing --bootstrap-server 3.86.192.80:9092 --replication-factor 1 --partitions 1
+
+
+bin/kafka-console-producer.sh --topic demo_testing --bootstrap-server 3.86.192.80:9092
+
+
+bin/kafka-console-consumer.sh --topic demo_testing --bootstrap-server 3.86.192.80:9092
+
+
+
+Configurations and FLow:
+
+Installed Java, Kafka on EC2 machine.
+Added Public IP in (server.properties) file so that the EC2 machine accessible from my computer.
+Allowed the traffic to flow into the EC2 machine.
+Zookeeper and Kafka server are running on server: port --> 3.86.192.80:9092.
+The producer will forward events to the prescried broker listening at 3.86.192.80:9092.
+Created an IAM user to access S3 from my computer.
+The consumer will dump any incoming data into the S3 bucket.
+For Analysis part, Crawler from AWS Glu will be used to crawl over the files in S3 bucket, also I
+created a role in th IAM so that the crawler could access the S3 bucket.
+We can query the the S3 bucket using athena service which is running on top of Crawler.
+
+Producer:
+
+So for this project I have used Kafka on EC2 machine of AWS.And, I made a topic with a single partition 
+over a broker (single copy only).
+I have used my physical computer as a producer to send eventful data (records) to the topics of Kafka broker. 
+For that I loaded the data from CSV format to Pandas DataFrame, and then I converted
+the DateFrame into JSOn format (Dictionary of Key -> Values). The Producer sends the JSON formatted records one by one to the
+consumer which is the S3 object.
+
+
+Consumer:
+
+I used S3 to dump income data event by event (record by record). The python code for the consumer is
+designed in such a way that it dumps each event into the S3 bucket in a seperate and singlr JSON files
+for feasability and testing purposes. 
+
+
